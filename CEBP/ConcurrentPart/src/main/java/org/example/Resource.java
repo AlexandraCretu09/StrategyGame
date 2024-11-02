@@ -1,4 +1,4 @@
-package main.java.org.example;
+package org.example;
 
 public class Resource {
     private String type;  // The type of resource (e.g., "wood", "stone", "gold")
