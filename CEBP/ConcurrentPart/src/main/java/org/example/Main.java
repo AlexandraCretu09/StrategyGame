@@ -1,4 +1,4 @@
-package org.example;
+package main.java.org.example;
 
 import java.util.Scanner;
 
@@ -9,18 +9,18 @@ public class Main {
         int cols = 15;  // Map width
         int noOfPlayers = 3;  // Number of players
 
-//        // Create a new Map object
-//        Map gameMap = new Map(rows, cols, noOfPlayers);
-//
-//        // Print the generated map
-//        System.out.println("Generated Map:");
-//        gameMap.printMap();
-//
-//        // Display resources
-//        System.out.println("\nResources:");
-//        for (Resource resource : gameMap.getResources()) {
-//            System.out.println(resource);
-//        }
+        // Create a new Map object
+        Map gameMap = new Map(rows, cols, noOfPlayers);
+
+        // Print the generated map
+        System.out.println("Generated Map:");
+        gameMap.printMap();
+
+        // Display resources
+        System.out.println("\nResources:");
+        for (Resource resource : gameMap.getResources()) {
+            System.out.println(resource);
+        }
 
         int[][] matrix = new int[5][5];
 

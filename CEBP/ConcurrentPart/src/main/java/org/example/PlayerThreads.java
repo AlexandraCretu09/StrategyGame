@@ -1,4 +1,4 @@
-package org.example;
+package main.java.org.example;
 
 public class PlayerThreads implements Runnable{
     private int[][] matrix;

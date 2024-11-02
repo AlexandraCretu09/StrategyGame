@@ -1,6 +1,6 @@
 
 
-package org.example;
+package main.java.org.example;
 
 import java.util.Random;
 
@@ -34,23 +34,44 @@ public class Map {
 
     private void initializeMap() {
         Random random = new Random();
-        int bufferZone = 1; // Buffer zone around players, creating a 3x3 grid (1 cell in all directions)
-        int maxAttempts = mapWidth * mapHeight * 4 / noOfPlayers; // Max attempts to find a valid spawn before failing
+        int bufferZone = 3; // Buffer zone around players, creating a 3x3 grid (1 cell in all directions)
+        int outerMargin = 1; // Outer margin for resources only
+        int innerRestrictedAreaMargin = Math.min(mapWidth, mapHeight) / 2; // Define a central area dynamically
+
+        // Define the bounds for the outer ring spawn area
+        int spawnAreaStartX = outerMargin;
+        int spawnAreaEndX = mapWidth - outerMargin - 1;
+        int spawnAreaStartY = outerMargin;
+        int spawnAreaEndY = mapHeight - outerMargin - 1;
+
+        // Define the inner restricted area (players cannot spawn here)
+        int restrictedAreaStartX = (mapWidth / 2) - innerRestrictedAreaMargin / 2;
+        int restrictedAreaEndX = (mapWidth / 2) + innerRestrictedAreaMargin / 2;
+        int restrictedAreaStartY = (mapHeight / 2) - innerRestrictedAreaMargin / 2;
+        int restrictedAreaEndY = (mapHeight / 2) + innerRestrictedAreaMargin / 2;
+
+        int maxAttempts = mapWidth * mapHeight * 4 / noOfPlayers;
 
         for (int i = 1; i <= noOfPlayers; i++) {
             int x = 0, y = 0;
             boolean validSpawn = false;
             int attempts = 0;
 
-            // Try to find a valid spawn location within a limited number of attempts
+            // Try to find a valid spawn location within the outer ring spawn area
             while (!validSpawn && attempts < maxAttempts) {
                 attempts++;
-                x = random.nextInt(mapWidth -2) + 1;
-                y = random.nextInt(mapHeight - 2) + 1;
+                x = random.nextInt(spawnAreaEndX - spawnAreaStartX + 1) + spawnAreaStartX;
+                y = random.nextInt(spawnAreaEndY - spawnAreaStartY + 1) + spawnAreaStartY;
 
-                validSpawn = true; // Assume it's valid, and check the 3x3 area around ita
+                // Ensure the location is not within the inner restricted area
+                if (x >= restrictedAreaStartX && x <= restrictedAreaEndX &&
+                        y >= restrictedAreaStartY && y <= restrictedAreaEndY) {
+                    continue; // Skip this location if it's within the restricted area
+                }
 
-                // Check if the 3x3 grid around the spawn point is clear
+                validSpawn = true;
+
+                // Check if the 3x3 area around the spawn point is clear
                 for (int dx = -bufferZone; dx <= bufferZone; dx++) {
                     for (int dy = -bufferZone; dy <= bufferZone; dy++) {
                         int checkX = x + dx;
@@ -59,7 +80,7 @@ public class Map {
                         // Ensure we are within bounds of the map
                         if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
                             if (terrain[checkY][checkX] != 0) {  // Non-zero means occupied by a player or resource
-                                validSpawn = false;  // Found an occupied area, reject this spawn point
+                                validSpawn = false; // Found an occupied area, reject this spawn point
                                 break;
                             }
                         }
@@ -69,9 +90,8 @@ public class Map {
             }
 
             if (!validSpawn) {
-                // Log an error and possibly throw an exception or break if no valid spawn found
                 System.err.println("Unable to find a valid spawn location for player " + i + " after " + attempts + " attempts.");
-                continue; // Continue with the next player
+                continue;
             }
 
             terrain[y][x] = i;
@@ -81,6 +101,7 @@ public class Map {
         }
         placeRandomResources(18);
     }
+
 
     // Place resources near a given location
     private void placeResourcesNear(int x, int y, int numberOfResources) {
