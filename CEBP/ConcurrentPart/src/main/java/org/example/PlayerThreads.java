@@ -32,25 +32,25 @@ public class PlayerThreads implements Runnable {
         }
     }
 
-    public void moveUp() {
+    public void moveLeft() {
         if (i > 0 && gameMap.movePlayer(playerId, i, j, i - 1, j)) {
             i -= 1;
         }
     }
 
-    public void moveDown() {
+    public void moveRight() {
         if (i < gameMap.getHeight() - 1 && gameMap.movePlayer(playerId, i, j, i + 1, j)) {
             i += 1;
         }
     }
 
-    public void moveLeft() {
+    public void moveUp() {
         if (j > 0 && gameMap.movePlayer(playerId, i, j, i, j - 1)) {
             j -= 1;
         }
     }
 
-    public void moveRight() {
+    public void moveDown() {
         if (j < gameMap.getWidth() - 1 && gameMap.movePlayer(playerId, i, j, i, j + 1)) {
             j += 1;
         }
