@@ -1,11 +1,9 @@
 package main.java.org.example;
 
-import java.util.Random;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -20,6 +18,7 @@ public class Map {
     // Resource types
     private static final String[] resourceTypes = {"wood", "stone", "gold"};
     private List<int[]> playerStartingPositions;
+    private Set<String> playerPositions = new HashSet<>(); // Track occupied player positions
 
     public Map(int rows, int cols, int noOfPlayers) {
         this.terrain = new int[rows][cols];
@@ -53,10 +52,11 @@ public class Map {
 
     private void initializeMap() {
         Random random = new Random();
-        int bufferZone = 3;
+        int bufferZone = 3; // Ensure players have space around them
         int outerMargin = 1;
         int innerRestrictedAreaMargin = Math.min(mapWidth, mapHeight) / 2;
 
+        // Define spawn and restricted area boundaries
         int spawnAreaStartX = outerMargin;
         int spawnAreaEndX = mapWidth - outerMargin - 1;
         int spawnAreaStartY = outerMargin;
@@ -69,6 +69,7 @@ public class Map {
 
         int maxAttempts = mapWidth * mapHeight * 4 / noOfPlayers;
 
+        // Place each player at a random location
         for (int i = 1; i <= noOfPlayers; i++) {
             int x = 0, y = 0;
             boolean validSpawn = false;
@@ -76,23 +77,28 @@ public class Map {
 
             while (!validSpawn && attempts < maxAttempts) {
                 attempts++;
+                // Generate random coordinates within the spawn area
                 x = random.nextInt(spawnAreaEndX - spawnAreaStartX + 1) + spawnAreaStartX;
                 y = random.nextInt(spawnAreaEndY - spawnAreaStartY + 1) + spawnAreaStartY;
 
+                // Skip restricted areas in the middle of the map
                 if (x >= restrictedAreaStartX && x <= restrictedAreaEndX &&
                         y >= restrictedAreaStartY && y <= restrictedAreaEndY) {
                     continue;
                 }
 
-                validSpawn = true;
+                validSpawn = true; // Assume position is valid until checked
 
+                // Check buffer zone around the proposed position
                 for (int dx = -bufferZone; dx <= bufferZone; dx++) {
                     for (int dy = -bufferZone; dy <= bufferZone; dy++) {
                         int checkX = x + dx;
                         int checkY = y + dy;
 
+                        // Ensure position is within map bounds and check for other players
                         if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
-                            if (terrain[checkY][checkX] != 0) {
+                            String checkPositionKey = checkX + "," + checkY;
+                            if (playerPositions.contains(checkPositionKey)) {
                                 validSpawn = false;
                                 break;
                             }
@@ -107,19 +113,26 @@ public class Map {
                 continue;
             }
 
+            // Place the player in the terrain and record their position
             terrain[y][x] = i;
-            playerStartingPositions.add(new int[] { x, y }); // Store starting position
+            playerPositions.add(x + "," + y); // Add to player positions to track where players are
             System.out.println("Player " + i + " spawn point: (" + x + ", " + y + ")");
+            playerStartingPositions.add(new int[]{x, y});
+
+            // Place resources around this spawn point
             placeResourcesNear(x, y, 3);
         }
+
+        // Place additional resources randomly across the map
         placeRandomResources(18);
     }
 
     public int[] getPlayerStartingPosition(int playerId) {
-        return playerStartingPositions.get(playerId - 1); // Adjusting for zero index
+        if (playerId - 1 < 0 || playerId - 1 >= playerStartingPositions.size()) {
+            throw new IllegalArgumentException("Player ID out of range: " + playerId);
+        }
+        return playerStartingPositions.get(playerId - 1);
     }
-
-
 
     private void placeResourcesNear(int x, int y, int numberOfResources) {
         Random random = new Random();
@@ -187,6 +200,9 @@ public class Map {
      * @return true if the move was successful, false otherwise.
      */
     public boolean movePlayer(int playerId, int oldX, int oldY, int newX, int newY) {
+        String newPositionKey = newX + "," + newY;
+
+        // Check for out-of-bounds move
         if (newX < 0 || newX >= mapWidth || newY < 0 || newY >= mapHeight) {
             System.out.println("Move out of bounds!");
             return false;
@@ -195,30 +211,36 @@ public class Map {
         Lock newCellLock = cellLocks[newY][newX];
         newCellLock.lock();
         try {
-            if (terrain[newY][newX] == 0) { // Check if the new position is empty
-                // Attempt to move the player
-                terrain[newY][newX] = playerId; // Set new position
-                System.out.println("Moving player " + playerId + " from (" + oldX + ", " + oldY + ") to (" + newX + ", " + newY + ")");
-
-                if (oldX != -1 && oldY != -1) { // If there is a valid old position
-                    Lock oldCellLock = cellLocks[oldY][oldX];
-                    oldCellLock.lock();
-                    try {
-                        // Here, we keep the old position occupied until we confirm the move is complete.
-                        // This can be used to reflect conquered positions or to implement additional game logic.
-                    } finally {
-                        oldCellLock.unlock();
-                    }
-                }
-                return true; // Move successful
-            } else {
-                System.out.println("Position occupied!");
-                return false; // New position is occupied
+            // Check if the new position is occupied by another player
+            if (playerPositions.contains(newPositionKey) && !(oldX == newX && oldY == newY)) {
+                System.out.println("Position occupied by another player!");
+                return false; // Block move if another player is in the target cell
             }
+
+            // Move is safe; update position on the terrain and in player positions
+            terrain[newY][newX] = playerId; // Set new position on the terrain
+            System.out.println("Moving player " + playerId + " from (" + oldX + ", " + oldY + ") to (" + newX + ", " + newY + ")");
+
+            if (oldX != -1 && oldY != -1) { // If there is a valid old position
+                Lock oldCellLock = cellLocks[oldY][oldX];
+                oldCellLock.lock();
+                try {
+                    // Clear the old position on the terrain and update player positions
+                    terrain[oldY][oldX] = 0; // Reset old position on the terrain
+                    playerPositions.remove(oldX + "," + oldY); // Remove old position from playerPositions
+                } finally {
+                    oldCellLock.unlock();
+                }
+            }
+
+            // Update the new position in the player positions
+            playerPositions.add(newPositionKey);
+            return true; // Move successful
         } finally {
             newCellLock.unlock();
         }
     }
 }
+
 
 
