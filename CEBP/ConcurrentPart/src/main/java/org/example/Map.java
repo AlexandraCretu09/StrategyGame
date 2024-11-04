@@ -1,4 +1,4 @@
-package main.java.org.example;
+package org.example;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
@@ -19,6 +19,11 @@ public class Map {
     private static final String[] resourceTypes = {"wood", "stone", "gold"};
     private List<int[]> playerStartingPositions;
     private Set<String> playerPositions = new HashSet<>(); // Track occupied player positions
+
+    private final ReentrantLock consoleLock = new ReentrantLock();
+
+
+
 
     public Map(int rows, int cols, int noOfPlayers) {
         this.terrain = new int[rows][cols];
@@ -109,7 +114,8 @@ public class Map {
             }
 
             if (!validSpawn) {
-                System.err.println("Unable to find a valid spawn location for player " + i + " after " + attempts + " attempts.");
+                System.err.println("Unable to find a valid spawn location for player " + i + " after "
+                        + attempts + " attempts.");
                 continue;
             }
 
@@ -149,7 +155,7 @@ public class Map {
             Resource resource = new Resource(resourceType, dx, dy);
             resources.add(resource);
             terrain[dy][dx] = -1;
-            System.out.println("Placed resource: " + resource);
+            //System.out.println("Placed resource: " + resource);
         }
     }
 
@@ -165,23 +171,29 @@ public class Map {
                 Resource resource = new Resource(resourceType, x, y);
                 resources.add(resource);
                 terrain[y][x] = -1;
-                System.out.println("Placed random resource: " + resource);
+                //System.out.println("Placed random resource: " + resource);
             }
         }
     }
 
-    public void printMap() {
-        for (int i = 0; i < mapHeight; i++) {
-            for (int j = 0; j < mapWidth; j++) {
-                if (terrain[i][j] == 0) {
-                    System.out.print(". ");
-                } else if (terrain[i][j] > 0) {
-                    System.out.print("P" + terrain[i][j] + " ");
-                } else {
-                    System.out.print("R ");
+    public synchronized void printMap() {
+        consoleLock.lock();
+        try {
+            for (int i = 0; i < mapHeight; i++) {
+                for (int j = 0; j < mapWidth; j++) {
+                    if (terrain[i][j] == 0) {
+                        System.out.print(". ");
+                    } else if (terrain[i][j] > 0) {
+                        System.out.print("P" + terrain[i][j] + " ");
+                    } else {
+                        System.out.print("R ");
+                    }
                 }
+                System.out.println();
             }
             System.out.println();
+        }finally {
+            consoleLock.unlock();
         }
     }
 
@@ -213,13 +225,24 @@ public class Map {
         try {
             // Check if the new position is occupied by another player
             if (playerPositions.contains(newPositionKey) && !(oldX == newX && oldY == newY)) {
-                System.out.println("Position occupied by another player!");
+                consoleLock.lock();
+                try {
+                    System.out.println("Position occupied by another player!");
+                }finally {
+                    consoleLock.unlock();
+                }
                 return false; // Block move if another player is in the target cell
             }
 
             // Move is safe; update position on the terrain and in player positions
             terrain[newY][newX] = playerId; // Set new position on the terrain
-            System.out.println("Moving player " + playerId + " from (" + oldX + ", " + oldY + ") to (" + newX + ", " + newY + ")");
+
+            consoleLock.lock();
+            try {
+                System.out.println("Moving player " + playerId + " from (" + oldX + ", " + oldY + ") to (" + newX + ", " + newY + ")");
+            }finally {
+                consoleLock.unlock();
+            }
 
             if (oldX != -1 && oldY != -1) { // If there is a valid old position
                 Lock oldCellLock = cellLocks[oldY][oldX];
@@ -240,6 +263,14 @@ public class Map {
             newCellLock.unlock();
         }
     }
+
+    public void printResources(){
+        System.out.println("\nResources:");
+        for (Resource resource : resources) {
+            System.out.println(resource);
+        }
+    }
+
 }
 
 
