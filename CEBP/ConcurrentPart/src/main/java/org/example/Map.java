@@ -176,26 +176,7 @@ public class Map {
         }
     }
 
-    public synchronized void printMap() {
-        consoleLock.lock();
-        try {
-            for (int i = 0; i < mapHeight; i++) {
-                for (int j = 0; j < mapWidth; j++) {
-                    if (terrain[i][j] == 0) {
-                        System.out.print(". ");
-                    } else if (terrain[i][j] > 0) {
-                        System.out.print("P" + terrain[i][j] + " ");
-                    } else {
-                        System.out.print("R ");
-                    }
-                }
-                System.out.println();
-            }
-            System.out.println();
-        }finally {
-            consoleLock.unlock();
-        }
-    }
+
 
     public List<Resource> getResources() {
         return resources;
@@ -234,6 +215,18 @@ public class Map {
                 return false; // Block move if another player is in the target cell
             }
 
+            for(Resource r : resources) {
+                if ((r.getX() == newX && r.getY() == newY) && !(oldX == newX && oldY == newY)) {
+                    consoleLock.lock();
+                    try {
+                        System.out.println("Position occupied by a resource!");
+                    } finally {
+                        consoleLock.unlock();
+                    }
+                    return false;
+                }
+            }
+
             // Move is safe; update position on the terrain and in player positions
             terrain[newY][newX] = playerId; // Set new position on the terrain
 
@@ -264,12 +257,27 @@ public class Map {
         }
     }
 
-    public void printResources(){
-        System.out.println("\nResources:");
-        for (Resource resource : resources) {
-            System.out.println(resource);
+    public synchronized void printMap() {
+        consoleLock.lock();
+        try {
+            for (int i = 0; i < mapHeight; i++) {
+                for (int j = 0; j < mapWidth; j++) {
+                    if (terrain[i][j] == 0) {
+                        System.out.print(". ");
+                    } else if (terrain[i][j] > 0) {
+                        System.out.print("P" + terrain[i][j] + " ");
+                    } else {
+                        System.out.print("R ");
+                    }
+                }
+                System.out.println();
+            }
+            System.out.println();
+        }finally {
+            consoleLock.unlock();
         }
     }
+
 
 }
 
