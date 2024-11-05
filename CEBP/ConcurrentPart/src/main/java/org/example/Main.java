@@ -1,11 +1,23 @@
 package org.example;
 
+import org.example.HTTPSRequestsHandler.CommandHandler;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static spark.Spark.port;
+
 public class Main {
     public static void main(String[] args) {
+
+        port(8081);  // Ensure this port is available
+
+        // Register routes in CommandHandler
+        CommandHandler.registerRoutes();
+
+
+        /*
         // Define the dimensions of the map and the number of players
         int rows = 15;  // Map height
         int cols = 15;  // Map width
@@ -52,5 +64,8 @@ public class Main {
                 e.printStackTrace();
             }
         }
+        */
+
+
     }
 }
