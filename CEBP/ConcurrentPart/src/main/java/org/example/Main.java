@@ -11,6 +11,9 @@ public class Main {
 
 
         List<User> users = Initializer.runInit();
+        int noOfPlayers = users.size();
+
+        System.out.println(noOfPlayers);
 
         for(User u : users){
             System.out.println(u.getPlayerId() + " " +u.getUsername());
