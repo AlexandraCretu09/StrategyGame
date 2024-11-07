@@ -1,20 +1,20 @@
 package org.example;
 
 import org.example.HTTPSRequestsHandler.CommandHandler;
+import org.example.HTTPSRequestsHandler.Initializer;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
-import static spark.Spark.port;
 
 public class Main {
     public static void main(String[] args) {
 
-        port(8081);  // Ensure this port is available
 
-        // Register routes in CommandHandler
-        CommandHandler.registerRoutes();
+        List<User> users = Initializer.runInit();
+
+        for(User u : users){
+            System.out.println(u.getPlayerId() + " " +u.getUsername());
+        }
 
 
         /*
