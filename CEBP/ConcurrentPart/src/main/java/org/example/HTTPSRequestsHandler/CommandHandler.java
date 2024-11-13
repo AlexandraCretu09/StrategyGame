@@ -1,5 +1,6 @@
 package org.example.HTTPSRequestsHandler;
 
+import org.example.Main;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -23,7 +24,9 @@ public class CommandHandler {
                 String username = json.optString("username");
                 String command = json.optString("command");
 
-                System.out.println("Received command from " + username + ": " + command);
+                //System.out.println("Received command from " + username + ": " + command);
+                //System.out.println("Registered Command");
+                Main.handleCommand(username, command);
 
 
                 response.status(200);
@@ -67,7 +70,7 @@ public class CommandHandler {
                 JSONArray usernamesList = json.getJSONArray("usernames");
 
                 List<String> users = new ArrayList<>();
-                System.out.println("Received the players: ");
+                //System.out.println("Received the players: ");
                 for (int i = 0; i < usernamesList.length(); i++) {
                     users.add(usernamesList.getString(i));
                 }
@@ -80,6 +83,20 @@ public class CommandHandler {
                 response.status(200);
                 return "UsersList processed";
             } catch (Exception e) {
+                response.status(500);
+                return "Server error: " + e.getMessage();
+            }
+        });
+    }
+
+    public static void endUserCommands(){
+        post("/api/showUsersAndCommandsList", (request, response) -> {
+            System.out.println("Show list was called");
+            try{
+               Main.printList();
+               return "Finished command processed";
+
+               }catch (Exception e) {
                 response.status(500);
                 return "Server error: " + e.getMessage();
             }

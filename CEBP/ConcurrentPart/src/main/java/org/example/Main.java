@@ -3,24 +3,58 @@ package org.example;
 import org.example.HTTPSRequestsHandler.CommandHandler;
 import org.example.HTTPSRequestsHandler.Initializer;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static spark.Spark.port;
 
 
 public class Main {
+
+    private static final ConcurrentHashMap<String, List<String>> userCommands = new ConcurrentHashMap<>();
     public static void main(String[] args) {
 
 
-        List<User> users = Initializer.runInit();
-        int noOfPlayers = users.size();
+//        List<User> users = Initializer.runInit();
+//        int noOfPlayers = users.size();
+//
+//        System.out.println(noOfPlayers);
+//
+//        for (User u : users) {
+//            System.out.println(u.getPlayerId() + " " + u.getUsername());
+//        }
 
-        System.out.println(noOfPlayers);
+        port(8081);
 
-        for(User u : users){
-            System.out.println(u.getPlayerId() + " " +u.getUsername());
+        CommandHandler.endUserCommands();
+        CommandHandler.registerRoutes();
+
+    }
+
+    public static synchronized void handleCommand(String username, String command) {
+        userCommands.computeIfAbsent(username, k -> new ArrayList<>()).add(command);
+
+    }
+
+    public static synchronized void printList() {
+        if (userCommands.isEmpty()) {
+            System.out.println("List is empty");
+        } else {
+            userCommands.forEach((username, commands) -> {
+                commands.forEach(command -> {
+                    System.out.println("Username: " + username + ", Command: " + command);
+                });
+            });
         }
+    }
 
 
-        /*
+
+
+/*
+    public static void runThreads(){
+
         // Define the dimensions of the map and the number of players
         int rows = 15;  // Map height
         int cols = 15;  // Map width
@@ -67,8 +101,6 @@ public class Main {
                 e.printStackTrace();
             }
         }
-        */
-
-
     }
+*/
 }
