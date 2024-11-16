@@ -1,19 +1,21 @@
 package org.example;
 
+import java.util.concurrent.BlockingQueue;
+
 public class PlayerThreads implements Runnable {
     private Map gameMap;
     private int i, j;  // Current position of the player
     private int playerId;
+    private final BlockingQueue<String> queue;
     private boolean running = true;
-    private int[] commandsList;
 
-    public PlayerThreads(Map gameMap, int playerId, int startX, int startY, int[]commandsList) {
+    public PlayerThreads(Map gameMap, int playerId, int startX, int startY, BlockingQueue<String> queue) {
         this.gameMap = gameMap;
         this.playerId = playerId;
         int[] startingPosition = gameMap.getPlayerStartingPosition(playerId);
         this.i = startingPosition[0];
         this.j = startingPosition[1];
-        this.commandsList = commandsList;
+        this.queue =  queue;
 
         //System.out.println("Player " + playerId + " initialized at position: (" + i + ", " + j + ")");
 
@@ -23,7 +25,22 @@ public class PlayerThreads implements Runnable {
     @Override
     public void run() {
         while (running) {
-            moveOnTheMap(commandsList);
+            String command = null;
+            try {
+                command = queue.take();
+                if(command.isEmpty()){
+                    System.err.println("Couldn't receive command");
+                    continue;
+                }
+                if (command.equals("end"))
+                    break;
+
+                moveOnTheMap(command);
+                System.out.println("Received the command: " + command);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
         }
     }
 
@@ -55,15 +72,15 @@ public class PlayerThreads implements Runnable {
             System.out.println("Position out of map bounds!");
     }
 
-    public void moveOnTheMap(int[]commands){
+    public void moveOnTheMap(String command){
 
-        for(int c: commands) {
-            switch (c) {
-                case 1 -> moveUp();
-                case 2 -> moveDown();
-                case 3 -> moveLeft();
-                case 4 -> moveRight();
-                case 5 -> stopMoving();
+
+            switch (command) {
+                case "moveUp" -> moveUp();
+                case "moveDown" -> moveDown();
+                case "moveLeft" -> moveLeft();
+                case "moveRight" -> moveRight();
+                case "end" -> stopMoving();
                 default -> System.out.println("Invalid direction!");
             }
 
@@ -74,10 +91,15 @@ public class PlayerThreads implements Runnable {
             }catch (InterruptedException e){
                 e.printStackTrace();
             }
-        }
+
     }
 
     public void stopMoving() {
         running = false;
+        try{
+            queue.put("end");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

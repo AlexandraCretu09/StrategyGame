@@ -1,12 +1,12 @@
 package org.example.HTTPSRequestsHandler;
 
+import org.example.Exceptions.EmptyUserListException;
 import org.example.Exceptions.VariablesNotMatching;
 import org.example.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.example.HTTPSRequestsHandler.CommandHandler.usernamesList;
 import static spark.Spark.port;
 public abstract class Initializer {
 
@@ -16,23 +16,23 @@ public abstract class Initializer {
 
         port(8081);
 
-        CommandHandler.numberOfPlayer();
-        usernamesList();
+        CommandHandler.usernamesList();
 
         List<User> users = new ArrayList<>();
-        int noOfPlayers;
 
 
         while (!CommandHandler.isGotLobbyInfo()) {
-            if (CommandHandler.isReceivedNumberOfPlayers() && CommandHandler.isReceivedUsernames()) {
+            if (CommandHandler.isReceivedUsernames()) {
                 CommandHandler.setGotLobbyInfo(true);
 
 
-                noOfPlayers = CommandHandler.getNoOfPlayers();
                 List<String> usernames = CommandHandler.getUsernames();
+                if(usernames.isEmpty())
+                    throw new EmptyUserListException();
 
-                if(noOfPlayers != usernames.size())
-                    throw new VariablesNotMatching();
+
+                int noOfPlayers = usernames.size();
+
 
                 for(int i=0; i < noOfPlayers; i++){
                     users.add(new User(i, usernames.get(i)));
