@@ -3,23 +3,19 @@ package org.example;
 import java.util.concurrent.BlockingQueue;
 
 public class PlayerThreads implements Runnable {
-    private Map gameMap;
+    private GameMap gameMap;
     private int i, j;  // Current position of the player
     private int playerId;
     private final BlockingQueue<String> queue;
     private boolean running = true;
 
-    public PlayerThreads(Map gameMap, int playerId, int startX, int startY, BlockingQueue<String> queue) {
+    public PlayerThreads(GameMap gameMap, int playerId, int startX, int startY, BlockingQueue<String> queue) {
         this.gameMap = gameMap;
         this.playerId = playerId;
         int[] startingPosition = gameMap.getPlayerStartingPosition(playerId);
         this.i = startingPosition[0];
         this.j = startingPosition[1];
         this.queue =  queue;
-
-        //System.out.println("Player " + playerId + " initialized at position: (" + i + ", " + j + ")");
-
-
     }
 
     @Override

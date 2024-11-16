@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 
 
-public class Map {
+public class GameMap {
     private int[][] terrain; // 0 for empty, -1 for resource, >0 for player ID
     private final Lock[][] cellLocks; // Locks for each cell to prevent concurrent access
     private static int noOfPlayers;
@@ -25,12 +25,12 @@ public class Map {
 
 
 
-    public Map(int rows, int cols, int noOfPlayers) {
+    public GameMap(int rows, int cols, int noOfPlayers) {
         this.terrain = new int[rows][cols];
         this.cellLocks = new ReentrantLock[rows][cols]; // Create a lock for each cell
         this.mapHeight = rows;
         this.mapWidth = cols;
-        Map.noOfPlayers = noOfPlayers;
+        GameMap.noOfPlayers = noOfPlayers;
         this.resources = new CopyOnWriteArrayList<>();
         playerStartingPositions = new ArrayList<>(noOfPlayers);
 
@@ -134,6 +134,7 @@ public class Map {
     }
 
     public int[] getPlayerStartingPosition(int playerId) {
+
         if (playerId - 1 < 0 || playerId - 1 >= playerStartingPositions.size()) {
             throw new IllegalArgumentException("Player ID out of range: " + playerId);
         }

@@ -3,7 +3,6 @@ package org.example.HTTPSRequestsHandler;
 import org.example.Main;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +14,7 @@ public class CommandHandler {
     private static volatile boolean receivedUsernames = false;
     private static volatile boolean gotLobbyInfo = false;
     private static List<String> usernames;
-    public static void registerRoutes() {
+    public static void receiveUsernameAndCommand() {
         post("/api/commands", (request, response) -> {
 
             try {
@@ -77,7 +76,7 @@ public class CommandHandler {
         });
     }
 
-    public static void sendOneCommand(){
+    public static void receiveOneCommand(){
         post("/api/sendOneCommand", (request, response) -> {
             JSONObject json = new JSONObject(request.body());
 
