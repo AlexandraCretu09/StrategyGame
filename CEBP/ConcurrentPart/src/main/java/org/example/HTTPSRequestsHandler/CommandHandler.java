@@ -3,6 +3,7 @@ package org.example.HTTPSRequestsHandler;
 import org.example.Main;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,11 +11,9 @@ import java.util.List;
 import static spark.Spark.*;
 public class CommandHandler {
 
-    private static volatile boolean receivedNumberOfPlayers = false;
+//    private static volatile boolean receivedNumberOfPlayers = false;
     private static volatile boolean receivedUsernames = false;
     private static volatile boolean gotLobbyInfo = false;
-
-    private static int noOfPlayers;
     private static List<String> usernames;
     public static void registerRoutes() {
         post("/api/commands", (request, response) -> {
@@ -24,9 +23,7 @@ public class CommandHandler {
                 String username = json.optString("username");
                 String command = json.optString("command");
 
-                //System.out.println("Received command from " + username + ": " + command);
-                //System.out.println("Registered Command");
-                Main.handleCommand(username, command);
+                Main.storeUserAndCommand(username, command);
 
 
                 response.status(200);
@@ -38,29 +35,6 @@ public class CommandHandler {
         });
     }
 
-
-
-    public static void numberOfPlayer(){
-        post("/api/noOfPlayers", (request, response) -> {
-
-            try {
-                JSONObject json = new JSONObject((request.body()));
-                int noOfPlayers = json.optInt("noOfPlayers");
-
-                System.out.println("Received no of players: " + noOfPlayers);
-                setReceivedNumberOfPlayers(true);
-
-                CommandHandler.setNoOfPlayers(noOfPlayers);
-
-
-                response.status(200);
-                return "NoOfPlayers processed";
-            } catch (Exception e) {
-                response.status(500);
-                return "Server error: " + e.getMessage();
-            }
-        });
-    }
 
     public static void usernamesList(){
         post("/api/usernames", (request, response) -> {
@@ -103,13 +77,24 @@ public class CommandHandler {
         });
     }
 
-    public static boolean isReceivedNumberOfPlayers() {
-        return receivedNumberOfPlayers;
+    public static void sendOneCommand(){
+        post("/api/sendOneCommand", (request, response) -> {
+            JSONObject json = new JSONObject(request.body());
+
+            try {
+                String command = json.optString("command");
+                Main.storeCommand(command);
+
+                return "Finished sending command";
+
+            } catch (Exception e) {
+                response.status(500);
+                return "Server error: " + e.getMessage();
+            }
+
+        });
     }
 
-    public static void setReceivedNumberOfPlayers(boolean receivedNumberOfPlayers) {
-        CommandHandler.receivedNumberOfPlayers = receivedNumberOfPlayers;
-    }
 
     public static boolean isReceivedUsernames() {
         return receivedUsernames;
@@ -127,13 +112,6 @@ public class CommandHandler {
         CommandHandler.gotLobbyInfo = gotLobbyInfo;
     }
 
-    public static int getNoOfPlayers() {
-        return CommandHandler.noOfPlayers;
-    }
-
-    public static void setNoOfPlayers(int noOfPlayers) {
-        CommandHandler.noOfPlayers = noOfPlayers;
-    }
 
     public static List<String> getUsernames(){
         return CommandHandler.usernames;
