@@ -32,10 +32,11 @@ public abstract class Initializer {
 
 
                 int noOfPlayers = usernames.size();
+                System.out.println("no of players in init: " + noOfPlayers);
 
 
                 for(int i=0; i < noOfPlayers; i++){
-                    users.add(new User(i, usernames.get(i)));
+                    users.add(new User(i+1, usernames.get(i)));
                 }
             }
         }
