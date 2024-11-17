@@ -56,10 +56,27 @@ public class GameMap {
     }
 
     private void initializeMap() {
+        // Base map size and scaling factor
+        int baseSize = 10; // Minimum map size
+        int scaleFactor = 2; // Growth factor for map size
+
+        // Calculate dynamic map size based on the number of players
+        int mapDimension = baseSize + Math.max(0, (noOfPlayers - 2) * scaleFactor);
+        mapWidth = mapDimension;
+        mapHeight = mapDimension;
+
+        System.out.println("Map size: " + mapWidth + "x" + mapHeight);
+
+
         Random random = new Random();
         int bufferZone = 3; // Ensure players have space around them
         int outerMargin = 1;
         int innerRestrictedAreaMargin = Math.min(mapWidth, mapHeight) / 2;
+
+        // Resize terrain and reset player positions
+        terrain = new int[mapHeight][mapWidth];
+        playerPositions.clear();
+        playerStartingPositions.clear();
 
         // Define spawn and restricted area boundaries
         int spawnAreaStartX = outerMargin;
@@ -126,11 +143,11 @@ public class GameMap {
             playerStartingPositions.add(new int[]{x, y});
 
             // Place resources around this spawn point
-            placeResourcesNear(x, y, 3);
+            placeResourcesNear(x, y, 4);
         }
 
         // Place additional resources randomly across the map
-        placeRandomResources(18);
+        placeRandomResources(8*noOfPlayers);
     }
 
     public int[] getPlayerStartingPosition(int playerId) {
