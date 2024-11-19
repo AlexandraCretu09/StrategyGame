@@ -1,14 +1,12 @@
 package com.example.StrategyGame.Lobby;
 
 import com.example.StrategyGame.User.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.Date;
 import java.util.List;
 
+@Entity
 public class Lobby {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +18,7 @@ public class Lobby {
     @Column(nullable = false)
     private String gameDuration;
     @Column
+    @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<User> usersList;
 
 

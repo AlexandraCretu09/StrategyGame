@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import static spark.Spark.port;
@@ -17,9 +16,8 @@ import static spark.Spark.port;
 
 public class Main {
 
-    private static final ConcurrentHashMap<String, List<String>> userCommands = new ConcurrentHashMap<>();
-    private static final Map<String, BlockingQueue<String>> userQueues = new ConcurrentHashMap<>();
-    private static BlockingQueue<String> commandQueue = new LinkedBlockingQueue<>();
+    private static final ConcurrentHashMap<String, BlockingQueue<String>> userQueues = new ConcurrentHashMap<>();
+    //private static BlockingQueue<String> commandQueue = new LinkedBlockingQueue<>();
 
 
     public static void main(String[] args) {
@@ -40,7 +38,7 @@ public class Main {
 
         CommandHandler.endUserCommands();
         CommandHandler.receiveUsernameAndCommand();
-        CommandHandler.receiveOneCommand();
+        //CommandHandler.receiveOneCommand();
 
 
         runThreads(users, gameMap);
@@ -49,24 +47,14 @@ public class Main {
 
     }
 
-    public static synchronized void storeUserAndCommand(String username, String command) {
+    public static void storeUserAndCommand(String username, String command) {
         BlockingQueue<String> queue = userQueues.get(username);
         if (queue != null) {
-            queue.offer(command); // Adds the command to the user's queue
+            synchronized (queue) {
+                queue.offer(command);
+            }
         } else {
             System.err.println("No queue found for username: " + username);
-        }
-    }
-
-    public static synchronized void printList() {
-        if (userCommands.isEmpty()) {
-            System.out.println("List is empty");
-        } else {
-            userCommands.forEach((username, commands) -> {
-                commands.forEach(command -> {
-                    System.out.println("Username: " + username + ", Command: " + command);
-                });
-            });
         }
     }
 
@@ -85,18 +73,14 @@ public class Main {
         return gameMap;
     }
 
-    public static void storeCommand(String command){
-        try {
-            commandQueue.put(command);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-
-
-
+//    public static void storeCommand(String command){
+//        try {
+//            commandQueue.put(command);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//    }
 
     private static void runThreads(List<User> users, GameMap gameMap){
 

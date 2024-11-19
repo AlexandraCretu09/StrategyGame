@@ -39,8 +39,10 @@ public class CommandHandler {
         post("/api/usernames", (request, response) -> {
 
             try {
-                JSONObject json = new JSONObject(request.body());
-                JSONArray usernamesList = json.getJSONArray("usernames");
+//                JSONObject json = new JSONObject(request.body());
+//                JSONArray usernamesList = json.getJSONArray("usernames");
+
+                JSONArray usernamesList = new JSONArray(request.body());
 
                 List<String> users = new ArrayList<>();
                 //System.out.println("Received the players: ");
@@ -66,7 +68,7 @@ public class CommandHandler {
         post("/api/showUsersAndCommandsList", (request, response) -> {
             System.out.println("Show list was called");
             try{
-               Main.printList();
+               //Main.printList();
                return "Finished command processed";
 
                }catch (Exception e) {
@@ -76,23 +78,23 @@ public class CommandHandler {
         });
     }
 
-    public static void receiveOneCommand(){
-        post("/api/sendOneCommand", (request, response) -> {
-            JSONObject json = new JSONObject(request.body());
-
-            try {
-                String command = json.optString("command");
-                Main.storeCommand(command);
-
-                return "Finished sending command";
-
-            } catch (Exception e) {
-                response.status(500);
-                return "Server error: " + e.getMessage();
-            }
-
-        });
-    }
+//    public static void receiveOneCommand(){
+//        post("/api/sendOneCommand", (request, response) -> {
+//            JSONObject json = new JSONObject(request.body());
+//
+//            try {
+//                String command = json.optString("command");
+//                Main.storeCommand(command);
+//
+//                return "Finished sending command";
+//
+//            } catch (Exception e) {
+//                response.status(500);
+//                return "Server error: " + e.getMessage();
+//            }
+//
+//        });
+//    }
 
 
     public static boolean isReceivedUsernames() {

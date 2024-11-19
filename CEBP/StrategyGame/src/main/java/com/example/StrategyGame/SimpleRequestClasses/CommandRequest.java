@@ -1,4 +1,4 @@
-package com.example.StrategyGame.CommandRequest;
+package com.example.StrategyGame.SimpleRequestClasses;
 
 public class CommandRequest {
     private String username;

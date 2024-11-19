@@ -27,7 +27,6 @@ public class UserController {
 
     @PostMapping("/command")
     public ResponseEntity<String> receiveUserCommand(@RequestBody User user) {
-        // Forward user to the other project
         userService.processUserCommand(user);
         return ResponseEntity.ok("User command received and processed.");
     }
