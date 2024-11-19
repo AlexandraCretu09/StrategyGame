@@ -44,28 +44,28 @@ public class PlayerThreads implements Runnable {
         if (i > 0 && gameMap.movePlayer(playerId, i, j, i - 1, j)) {
             i -= 1;
         }else if (i <= 0)
-            System.out.println("Position out of map bounds!");
+            System.err.println("Position out of map bounds!");
     }
 
     public void moveRight() {
         if (i < gameMap.getHeight() - 1 && gameMap.movePlayer(playerId, i, j, i + 1, j)) {
             i += 1;
         } else if (i >= gameMap.getHeight())
-            System.out.println("Position out of map bounds!");
+            System.err.println("Position out of map bounds!");
     }
 
     public void moveUp() {
         if (j > 0 && gameMap.movePlayer(playerId, i, j, i, j - 1)) {
             j -= 1;
         }else if (j <= 0)
-            System.out.println("Position out of map bounds!");
+            System.err.println("Position out of map bounds!");
     }
 
     public void moveDown() {
         if (j < gameMap.getWidth() - 1 && gameMap.movePlayer(playerId, i, j, i, j + 1)) {
             j += 1;
         }else if (j >= gameMap.getHeight())
-            System.out.println("Position out of map bounds!");
+            System.err.println("Position out of map bounds!");
     }
 
     public void moveOnTheMap(String command){
@@ -77,7 +77,7 @@ public class PlayerThreads implements Runnable {
                 case "moveLeft" -> moveLeft();
                 case "moveRight" -> moveRight();
                 case "end" -> stopMoving();
-                default -> System.out.println("Invalid direction!");
+                default -> System.err.println("Invalid direction!");
             }
 
             gameMap.printMap();
