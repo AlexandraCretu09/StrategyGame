@@ -3,6 +3,7 @@ package com.example.StrategyGame.Lobby;
 import com.example.StrategyGame.User.User;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +15,7 @@ public class Lobby {
     @Column(nullable = false)
     private int noOfPlayers;
     @Column(nullable = false)
-    private Date creationDate;
+    private LocalDateTime creationDate;
     @Column(nullable = false)
     private String gameDuration;
     @Column
@@ -36,11 +37,11 @@ public class Lobby {
         this.noOfPlayers = noOfPlayers;
     }
 
-    public Date getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(Date creationDate) {
+    public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
     }
 

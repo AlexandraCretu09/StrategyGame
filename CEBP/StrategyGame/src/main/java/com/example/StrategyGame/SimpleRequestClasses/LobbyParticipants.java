@@ -11,4 +11,5 @@ public class LobbyParticipants {
     public void setUsernames(List<String> usernames) {
         this.usernames = usernames;
     }
+
 }

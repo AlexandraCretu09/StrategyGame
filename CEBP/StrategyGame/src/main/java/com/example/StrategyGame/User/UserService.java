@@ -1,6 +1,7 @@
 package com.example.StrategyGame.User;
 
 import com.example.StrategyGame.SimpleRequestClasses.CommandRequest;
+import com.example.StrategyGame.SimpleRequestClasses.SimpleUser;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 public class UserService {
     private static final String ConcurrentProjectURL = "http://localhost:8081/api/commands";
 
-    public void processUserCommand(User user) {
+    public void processUserCommand(SimpleUser user) {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

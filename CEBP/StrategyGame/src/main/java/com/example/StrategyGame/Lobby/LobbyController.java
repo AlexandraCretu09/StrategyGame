@@ -19,10 +19,16 @@ public class LobbyController {
     private LobbyService lobbyService;
 
     @PostMapping
-    public Lobby createLobby(@RequestBody Lobby lobby) { return lobbyRepository.save(lobby); }
+    public void createLobby(@RequestBody Lobby lobby) {
+        lobbyRepository.save(lobby);
+    }
 
     @PostMapping("/sendUsernames")
     public ResponseEntity<String> sendLobbyParticipants(@RequestBody LobbyParticipants lobbyParticipants){
+
+        Lobby lobby = lobbyService.registerLobby(lobbyParticipants);
+        createLobby(lobby);
+
         lobbyService.processUsernamesList(lobbyParticipants);
         return ResponseEntity.ok("User list received and processed.");
     }
