@@ -39,21 +39,14 @@ public class CommandHandler {
         post("/api/usernames", (request, response) -> {
 
             try {
-//                JSONObject json = new JSONObject(request.body());
-//                JSONArray usernamesList = json.getJSONArray("usernames");
-
                 JSONArray usernamesList = new JSONArray(request.body());
 
                 List<String> users = new ArrayList<>();
-                //System.out.println("Received the players: ");
                 for (int i = 0; i < usernamesList.length(); i++) {
                     users.add(usernamesList.getString(i));
                 }
-
-
                 setReceivedUsernames(true);
                 CommandHandler.setUsernames(users);
-
 
                 response.status(200);
                 return "UsersList processed";

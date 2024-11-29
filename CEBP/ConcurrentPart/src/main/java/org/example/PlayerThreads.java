@@ -32,6 +32,7 @@ public class PlayerThreads implements Runnable {
                     break;
 
                 moveOnTheMap(command);
+                Main.sendTerrainToSpringCaller();
                 System.out.println("Received the command: " + command);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);

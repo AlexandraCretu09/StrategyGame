@@ -1,6 +1,8 @@
 package com.example.StrategyGame.Lobby;
 
 import com.example.StrategyGame.SimpleRequestClasses.LobbyParticipants;
+import com.example.StrategyGame.User.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -8,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 @Service
@@ -25,5 +29,31 @@ public class LobbyService {
 
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.postForEntity(ConcurrentProjectURL, request, String.class);
+    }
+
+    public Lobby registerLobby(LobbyParticipants lobbyParticipants){
+
+        Lobby lobby = new Lobby();
+
+        DateTimeFormatter date = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        lobby.setCreationDate(LocalDateTime.now());
+
+        List<String> usernames = new ArrayList<>();
+        usernames = lobbyParticipants.getUsernames();
+        lobby.setNoOfPlayers(usernames.size());
+
+        List<User> usersList = new ArrayList<>();
+        for(String u : usernames){
+            User user = new User();
+            user.setUsername(u);
+            user.setLobby(lobby);
+            usersList.add(user);
+        }
+        lobby.setUsersList(usersList);
+
+        lobby.setGameDuration("");
+
+        return lobby;
+
     }
 }

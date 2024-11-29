@@ -12,9 +12,6 @@ public class User {
     @Column(nullable = false)
     private String username;
 
-    @Column(nullable = false)
-    private String command;
-
     @ManyToOne
     @JoinColumn(name = "lobby_id")
     private Lobby lobby;
@@ -25,7 +22,11 @@ public class User {
 
     public String getUsername() { return this.username;}
 
-    public  void setCommand(String command){ this.command = command; }
-    public String getCommand(){ return this.command; }
+    public Lobby getLobby() {
+        return lobby;
+    }
 
+    public void setLobby(Lobby lobby) {
+        this.lobby = lobby;
+    }
 }

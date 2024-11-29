@@ -1,5 +1,8 @@
 package org.example;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -294,6 +297,11 @@ public class GameMap {
         }finally {
             consoleLock.unlock();
         }
+    }
+
+    public String terrainToJSON() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(this.terrain);
     }
 
 
