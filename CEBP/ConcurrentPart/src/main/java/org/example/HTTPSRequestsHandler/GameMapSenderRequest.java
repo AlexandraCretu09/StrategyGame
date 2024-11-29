@@ -7,10 +7,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static spark.Spark.*;
-
 public class GameMapSenderRequest {
 
     public static void sendTerrainToSpring(GameMap gameMap) {
