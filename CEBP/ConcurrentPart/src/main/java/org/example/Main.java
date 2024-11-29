@@ -3,23 +3,17 @@ package org.example;
 import org.example.Exceptions.EmptyUserListException;
 import org.example.HTTPSRequestsHandler.CommandHandler;
 import org.example.HTTPSRequestsHandler.Initializer;
+import org.example.HTTPSRequestsHandler.GameMapSenderRequest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static spark.Spark.port;
+import java.util.concurrent.*;
 
 
 public class Main {
 
     private static final ConcurrentHashMap<String, BlockingQueue<String>> userQueues = new ConcurrentHashMap<>();
-    //private static BlockingQueue<String> commandQueue = new LinkedBlockingQueue<>();
-
-
+    private static GameMap gameMap;
     public static void main(String[] args) {
 
 
@@ -34,17 +28,12 @@ public class Main {
             System.out.println(u.getPlayerId() + " " + u.getUsername());
         }
 
-        GameMap gameMap = initMap(noOfPlayers);
+        gameMap = initMap(noOfPlayers);
 
         CommandHandler.endUserCommands();
         CommandHandler.receiveUsernameAndCommand();
-        //CommandHandler.receiveOneCommand();
-
 
         runThreads(users, gameMap);
-
-
-
     }
 
     public static void storeUserAndCommand(String username, String command) {
@@ -58,7 +47,17 @@ public class Main {
         }
     }
 
-    public static GameMap initMap(int noOfPlayers){
+    public static void sendTerrainToSpringCaller(){
+        try {
+            synchronized (gameMap) {
+                GameMapSenderRequest.sendTerrainToSpring(gameMap);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static GameMap initMap(int noOfPlayers){
         // Define the dimensions of the map and the number of players
         int rows = 15;  // Map height
         int cols = 15;  // Map width
@@ -73,19 +72,8 @@ public class Main {
         return gameMap;
     }
 
-//    public static void storeCommand(String command){
-//        try {
-//            commandQueue.put(command);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-//
-//    }
 
     private static void runThreads(List<User> users, GameMap gameMap){
-
-
-
 
         // List to store player threads
         List<PlayerThreads> players = new ArrayList<>();
@@ -108,6 +96,8 @@ public class Main {
         }
 
 
+
+
         for (Thread thread : threads) {
             try {
                 thread.join();
@@ -116,4 +106,6 @@ public class Main {
             }
         }
     }
+
+
 }
