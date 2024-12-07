@@ -1,5 +1,6 @@
 package com.example.StrategyGame.User;
 
+import com.example.StrategyGame.Lobby.Lobby;
 import com.example.StrategyGame.SimpleRequestClasses.CommandRequest;
 import com.example.StrategyGame.SimpleRequestClasses.SimpleUser;
 import org.springframework.http.HttpEntity;
@@ -8,6 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -25,6 +29,20 @@ public class UserService {
 
         System.out.println("Response from Java project: " + response.getBody());
 
+    }
+
+    public User createUser(String username, Lobby lobby){
+        User user = new User();
+        user.setUsername(username);
+        user.setLobby(lobby);
+        return user;
+    }
+    public List<String> getUsernamesList(List<User> userList){
+        List<String> usernames= new ArrayList<>();
+        for(User u : userList){
+            usernames.add(u.getUsername());
+        }
+        return usernames;
     }
 
 }

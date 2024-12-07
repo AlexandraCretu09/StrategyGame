@@ -35,20 +35,16 @@ public class GameMapController {
         UnityWebSocketClient client = new UnityWebSocketClient(URI.create("ws://localhost:8082/terrainUpdate"));
 
         try {
-            client.connect(); // Connect to the Unity WebSocket server
-
-            // Wait for the connection to open before sending
+            client.connect();
             int retries = 0;
             while (!client.isOpen() && retries < 5) {
-                Thread.sleep(1000);  // Wait for a second
+                Thread.sleep(1000);
                 retries++;
             }
 
-            // If the WebSocket connection is open, send the game map
             if (client.isOpen()) {
-                client.sendGameMap(gameMap); // Send the game map to Unity
+                client.sendGameMap(gameMap);
             } else {
-                // If the connection is not open, return an error response
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WebSocket connection not open.");
             }
 
@@ -56,7 +52,6 @@ public class GameMapController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update terrain");
         } finally {
-            // Manually close the WebSocket client after use
             client.close();
         }
 
