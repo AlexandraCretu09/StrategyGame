@@ -8,17 +8,15 @@ import org.example.HTTPSRequestsHandler.GameMapSenderRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-
-
 public class Main {
 
     private static final ConcurrentHashMap<String, BlockingQueue<String>> userQueues = new ConcurrentHashMap<>();
     private static GameMap gameMap;
+
     public static void main(String[] args) {
 
-
         List<User> users = Initializer.runInit();
-        if(users.isEmpty())
+        if (users.isEmpty())
             throw new EmptyUserListException();
 
         int noOfPlayers = users.size();
@@ -28,7 +26,7 @@ public class Main {
             System.out.println(u.getPlayerId() + " " + u.getUsername());
         }
 
-        gameMap = initMap(noOfPlayers);
+        gameMap = initMap(noOfPlayers, users);
 
         CommandHandler.endUserCommands();
         CommandHandler.receiveUsernameAndCommand();
@@ -36,18 +34,18 @@ public class Main {
         runThreads(users, gameMap);
     }
 
-    public static void storeUserAndCommand(String username, String command) {
+    public static void storeUserAndCommand(String username, String commandJson) {
         BlockingQueue<String> queue = userQueues.get(username);
         if (queue != null) {
             synchronized (queue) {
-                queue.offer(command);
+                queue.offer(commandJson); // Pass the full JSON string
             }
         } else {
             System.err.println("No queue found for username: " + username);
         }
     }
 
-    public static void sendTerrainToSpringCaller(){
+    public static void sendTerrainToSpringCaller() {
         try {
             synchronized (gameMap) {
                 GameMapSenderRequest.sendTerrainToSpring(gameMap);
@@ -57,13 +55,13 @@ public class Main {
         }
     }
 
-    private static GameMap initMap(int noOfPlayers){
+    private static GameMap initMap(int noOfPlayers, List<User> users) {
         // Define the dimensions of the map and the number of players
         int rows = 15;  // Map height
         int cols = 15;  // Map width
 
         // Create a new Map object
-        GameMap gameMap = new GameMap(rows, cols, noOfPlayers);
+        GameMap gameMap = new GameMap(rows, cols, noOfPlayers, users);
 
         // Print the generated map
         System.out.println("Generated Map:");
@@ -72,20 +70,20 @@ public class Main {
         return gameMap;
     }
 
-
-    private static void runThreads(List<User> users, GameMap gameMap){
+    private static void runThreads(List<User> users, GameMap gameMap) {
 
         // List to store player threads
         List<PlayerThreads> players = new ArrayList<>();
         List<Thread> threads = new ArrayList<>();
 
-        for(User u : users){
+        for (User u : users) {
             int[] startingPosition = gameMap.getPlayerStartingPosition(u.getPlayerId());
             int startX = startingPosition[0];
             int startY = startingPosition[1];
 
             String username = u.getUsername();
             userQueues.put(username, new LinkedBlockingQueue<>());
+            System.out.println("Initialized queue for username: " + username);
 
             PlayerThreads playerThread = new PlayerThreads(gameMap, u.getPlayerId(), startX, startY, userQueues.get(username));
 
@@ -95,9 +93,6 @@ public class Main {
             thread.start();
         }
 
-
-
-
         for (Thread thread : threads) {
             try {
                 thread.join();
@@ -106,6 +101,4 @@ public class Main {
             }
         }
     }
-
-
 }
