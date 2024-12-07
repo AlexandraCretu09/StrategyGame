@@ -21,16 +21,6 @@ public class LobbyController {
     @Autowired
     private LobbyService lobbyService;
 
-//    @Operation(summary = "Sends a list of usernames", description = "Saves the list of usernames in the database and sends them to the concurrent part")
-//    @PostMapping("/sendUsernames")
-//    public ResponseEntity<String> sendLobbyParticipants(@RequestBody LobbyParticipants lobbyParticipants){
-//
-//        Lobby lobby = lobbyService.registerLobby(lobbyParticipants);
-//        createLobby(lobby);
-//
-//        lobbyService.processUsernamesList(lobbyParticipants);
-//        return ResponseEntity.ok("User list received and processed.");
-//    }
 
     @Operation(summary = "Creates a lobby")
     @PostMapping("/createLobby")
