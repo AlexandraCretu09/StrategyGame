@@ -88,22 +88,38 @@ public class PlayerThreads implements Runnable {
     }
 
 
-    public void upgradeHouse() {
+    public void upgradeHouse(int x, int y) {
+        System.out.printf("Player %d attempting to upgrade house at (%d, %d)",
+                playerId, x, y);
+
         boolean upgraded = gameMap.upgradeHouse(
                 playerId,
-                i, // Current X position
-                j // Current Y position
+                x, // Current X position
+                y // Current Y position
         );
-        System.out.println(upgraded ? "House upgraded successfully." : "Failed to upgrade house.");
+
+        if (upgraded) {
+            System.out.println("House upgraded successfully at (" + x + ", " + y + ").");
+        } else {
+            System.err.println("Failed to upgrade house at (" + x + ", " + y + ")");
+        }
     }
 
-    public void destroyHouse() {
+    public void destroyHouse(int x, int y) {
+        System.out.printf("Player %d attempting to destroy house at (%d, %d)",
+                playerId, x, y);
+
         boolean destroyed = gameMap.destroyHouse(
                 playerId,
-                i, // Current X position
-                j // Current Y position
+                x, // Current X position
+                y // Current Y position
         );
-        System.out.println(destroyed ? "House destroyed successfully." : "Failed to destroy house.");
+
+        if (destroyed) {
+            System.out.println("House destroyed successfully at (" + x + ", " + y + ").");
+        } else {
+            System.err.println("Failed to destroy house at (" + x + ", " + y + ")");
+        }
     }
     public void moveOnTheMap(String command) {
         try {
@@ -128,6 +144,22 @@ public class PlayerThreads implements Runnable {
 
                     // Call the placeHouse method
                     placeHouse(x, y, resourceType);
+                }
+                case "destroyHouse" ->{
+                    JSONObject position = commandJson.getJSONObject("position");
+                    int x = position.getInt("x");
+                    int y = position.getInt("y");
+
+                    destroyHouse(x,y);
+
+                }
+                case "upgradeHouse" -> {
+                    JSONObject position = commandJson.getJSONObject("position");
+                    int x = position.getInt("x");
+                    int y = position.getInt("y");
+
+                    upgradeHouse(x,y);
+
                 }
                 case "end" -> stopMoving();
                 default -> System.err.println("Invalid command: " + cmd);
