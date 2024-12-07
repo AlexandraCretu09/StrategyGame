@@ -1,7 +1,10 @@
 package com.example.StrategyGame.Lobby;
 
+import com.example.StrategyGame.CustomExceptions.CommandNotPermitted;
+import com.example.StrategyGame.CustomExceptions.LobbyNotFoundException;
 import com.example.StrategyGame.SimpleRequestClasses.LobbyParticipants;
 import com.example.StrategyGame.User.User;
+import com.example.StrategyGame.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,12 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 @Service
 public class LobbyService {
+    @Autowired
+    private LobbyRepository lobbyRepository;
+    @Autowired
+    private UserService userService;
+
     private static final String ConcurrentProjectURL = "http://localhost:8081/api/usernames";
 
-    public void processUsernamesList(LobbyParticipants lobbyParticipants){
-
-        List<String> usernamesList = new ArrayList<>();
-        usernamesList = lobbyParticipants.getUsernames();
+    private void processUsernamesList(List<String> usernamesList){
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -31,29 +36,68 @@ public class LobbyService {
         ResponseEntity<String> response = restTemplate.postForEntity(ConcurrentProjectURL, request, String.class);
     }
 
-    public Lobby registerLobby(LobbyParticipants lobbyParticipants){
 
+    private Lobby findLobbyById(int lobbyId) {
+        return lobbyRepository.findById(lobbyId)
+                .orElseThrow(() -> new LobbyNotFoundException("Lobby not found with ID: " + lobbyId));
+    }
+
+    public int addFirstPlayerToLobby(String ipAddress, String username){
         Lobby lobby = new Lobby();
-
         DateTimeFormatter date = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         lobby.setCreationDate(LocalDateTime.now());
+        lobby.setNoOfPlayers(1);
 
-        List<String> usernames = new ArrayList<>();
-        usernames = lobbyParticipants.getUsernames();
-        lobby.setNoOfPlayers(usernames.size());
-
+        User user = userService.createUser(username, lobby);
         List<User> usersList = new ArrayList<>();
-        for(String u : usernames){
-            User user = new User();
-            user.setUsername(u);
-            user.setLobby(lobby);
-            usersList.add(user);
-        }
+        usersList.add(user);
         lobby.setUsersList(usersList);
 
-        lobby.setGameDuration("");
+        lobby.setIpList(new ArrayList<>());
+        lobby.getIpList().add(ipAddress);
 
-        return lobby;
+        lobby.setGameDuration("");
+        lobby.setJoinable(true);
+
+        lobby.setCreatorUsername(username);
+        lobbyRepository.save(lobby);
+
+        return lobby.getLobbyId();
+    }
+
+    public String addPlayerToLobby(int lobbyId, String ipAddress, String username) {
+        Lobby lobby = findLobbyById(lobbyId);
+
+        if (!lobby.isJoinable()) {
+            throw new IllegalStateException("Lobby is not joinable at the moment.");
+        }
+
+        if (!lobby.getIpList().contains(ipAddress)) {
+            lobby.getIpList().add(ipAddress);
+
+            User user = userService.createUser(username, lobby);
+
+            lobby.getUsersList().add(user);
+            lobby.setNoOfPlayers(lobby.getNoOfPlayers() + 1);
+            lobbyRepository.save(lobby);
+        }
+        return ipAddress;
+    }
+
+    public void startGame(String username, int lobbyId){
+        Lobby lobby = findLobbyById(lobbyId);
+
+        if(!lobby.getCreatorUsername().equals(username))
+            throw new CommandNotPermitted("User doens't have enough permissions");
+        lobby.setJoinable(false);
+//        DateTimeFormatter date = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        lobby.setGameCreationDate(LocalDateTime.now());
+        lobbyRepository.save(lobby);
+
+        List<String> usernames = userService.getUsernamesList(lobby.getUsersList());
+        processUsernamesList(usernames);
 
     }
+
+
 }

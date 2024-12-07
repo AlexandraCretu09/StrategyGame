@@ -33,6 +33,8 @@ public class Main {
         CommandHandler.endUserCommands();
         CommandHandler.receiveUsernameAndCommand();
 
+        sendTerrainToSpringCaller();
+
         runThreads(users, gameMap);
     }
 
