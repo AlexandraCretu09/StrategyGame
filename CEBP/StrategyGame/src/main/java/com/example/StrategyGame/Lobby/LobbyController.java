@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -21,23 +22,12 @@ public class LobbyController {
     @Autowired
     private LobbyService lobbyService;
 
-//    @Operation(summary = "Sends a list of usernames", description = "Saves the list of usernames in the database and sends them to the concurrent part")
-//    @PostMapping("/sendUsernames")
-//    public ResponseEntity<String> sendLobbyParticipants(@RequestBody LobbyParticipants lobbyParticipants){
-//
-//        Lobby lobby = lobbyService.registerLobby(lobbyParticipants);
-//        createLobby(lobby);
-//
-//        lobbyService.processUsernamesList(lobbyParticipants);
-//        return ResponseEntity.ok("User list received and processed.");
-//    }
 
     @Operation(summary = "Creates a lobby")
     @PostMapping("/createLobby")
     public ResponseEntity<String> createLobby(@RequestParam String ipAddress, @RequestParam String username){
         int lobbyId = lobbyService.addFirstPlayerToLobby(ipAddress, username);
-        return ResponseEntity.ok(username + " Successfully created a lobby with the id: " + lobbyId);
-
+        return ResponseEntity.ok(String.valueOf(lobbyId));
     }
 
     @Operation(summary="Joins a lobby from the frontend")
@@ -66,7 +56,6 @@ public class LobbyController {
         }
 
     }
-
 
 
 }

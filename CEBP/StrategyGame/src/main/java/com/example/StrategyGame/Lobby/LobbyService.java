@@ -89,6 +89,8 @@ public class LobbyService {
 
         if(!lobby.getCreatorUsername().equals(username))
             throw new CommandNotPermitted("User doens't have enough permissions");
+        if(!lobby.isJoinable())
+            throw new CommandNotPermitted("Game cannot be started");
         lobby.setJoinable(false);
 //        DateTimeFormatter date = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         lobby.setGameCreationDate(LocalDateTime.now());
