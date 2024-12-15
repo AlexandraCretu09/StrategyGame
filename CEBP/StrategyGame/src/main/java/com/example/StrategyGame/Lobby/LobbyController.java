@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -26,8 +27,7 @@ public class LobbyController {
     @PostMapping("/createLobby")
     public ResponseEntity<String> createLobby(@RequestParam String ipAddress, @RequestParam String username){
         int lobbyId = lobbyService.addFirstPlayerToLobby(ipAddress, username);
-        return ResponseEntity.ok(username + " Successfully created a lobby with the id: " + lobbyId);
-
+        return ResponseEntity.ok(String.valueOf(lobbyId));
     }
 
     @Operation(summary="Joins a lobby from the frontend")
@@ -56,7 +56,6 @@ public class LobbyController {
         }
 
     }
-
 
 
 }

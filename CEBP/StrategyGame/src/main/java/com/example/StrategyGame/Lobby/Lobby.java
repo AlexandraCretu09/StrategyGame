@@ -34,6 +34,9 @@ public class Lobby {
     private String creatorUsername;
 
 
+    public void setLobbyId(int lobbyId) {
+        this.lobbyId = lobbyId;
+    }
 
     public int getLobbyId() {
         return lobbyId;
