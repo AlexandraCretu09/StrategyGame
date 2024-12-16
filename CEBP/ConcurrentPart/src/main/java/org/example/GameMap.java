@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -11,12 +12,17 @@ import java.util.List;
 
 
 public class GameMap {
-    private int[][] terrain; // 0 for empty, -1 for resource, >0 for player ID
+
+    private int[][] terrain;
+    private Map<String, House> houses = new ConcurrentHashMap<>();
+    // 0 for empty, -1 for resource, >0 for player ID
     private final Lock[][] cellLocks; // Locks for each cell to prevent concurrent access
     private static int noOfPlayers;
     private List<Resource> resources;
     private int mapWidth;
     private int mapHeight;
+
+    private Map<Integer, User> players = new HashMap<>();
 
     // Resource types
     private static final String[] resourceTypes = {"wood", "stone", "gold"};
@@ -25,10 +31,19 @@ public class GameMap {
 
     private final ReentrantLock consoleLock = new ReentrantLock();
 
+    private User getUserById(int playerId) {
+        return players.get(playerId);
+    }
+
+    public User getUserByToken(String token) {
+        return players.values().stream()
+                .filter(user -> token.equals(user.getUserToken()))
+                .findFirst()
+                .orElse(null);
+    }
 
 
-
-    public GameMap(int rows, int cols, int noOfPlayers) {
+    public GameMap(int rows, int cols, int noOfPlayers, List<User> users) {
         this.terrain = new int[rows][cols];
         this.cellLocks = new ReentrantLock[rows][cols]; // Create a lock for each cell
         this.mapHeight = rows;
@@ -45,6 +60,11 @@ public class GameMap {
         }
 
         initializeMap();
+
+        this.players = new HashMap<>();
+        for (User user : users) {
+            this.players.put(user.getPlayerId(), user);
+        }
 
     }
 
@@ -150,7 +170,7 @@ public class GameMap {
         }
 
         // Place additional resources randomly across the map
-        placeRandomResources(8*noOfPlayers);
+        placeRandomResources(8 * noOfPlayers);
     }
 
     public int[] getPlayerStartingPosition(int playerId) {
@@ -177,6 +197,8 @@ public class GameMap {
             resources.add(resource);
             terrain[dy][dx] = -1;
             //System.out.println("Placed resource: " + resource);
+            System.out.println("Placed resource: " + resource.getType() + " at (" + resource.getX() + ", " + resource.getY() + ")");
+
         }
     }
 
@@ -196,7 +218,6 @@ public class GameMap {
             }
         }
     }
-
 
 
     public List<Resource> getResources() {
@@ -230,13 +251,13 @@ public class GameMap {
                 consoleLock.lock();
                 try {
                     System.out.println("Position occupied by another player!");
-                }finally {
+                } finally {
                     consoleLock.unlock();
                 }
                 return false; // Block move if another player is in the target cell
             }
 
-            for(Resource r : resources) {
+            for (Resource r : resources) {
                 if ((r.getX() == newX && r.getY() == newY) && !(oldX == newX && oldY == newY)) {
                     consoleLock.lock();
                     try {
@@ -254,7 +275,7 @@ public class GameMap {
             consoleLock.lock();
             try {
                 System.out.println("Moving player " + playerId + " from (" + oldX + ", " + oldY + ") to (" + newX + ", " + newY + ")");
-            }finally {
+            } finally {
                 consoleLock.unlock();
             }
 
@@ -283,29 +304,164 @@ public class GameMap {
         try {
             for (int i = 0; i < mapHeight; i++) {
                 for (int j = 0; j < mapWidth; j++) {
-                    if (terrain[i][j] == 0) {
-                        System.out.print(". ");
-                    } else if (terrain[i][j] > 0) {
-                        System.out.print("P" + terrain[i][j] + " ");
-                    } else {
-                        System.out.print("R ");
+                    boolean resourceFound = false;
+
+                    // Check if there's a resource at this location
+                    for (Resource resource : resources) {
+                        if (resource.getX() == j && resource.getY() == i) {
+                            String resourceSymbol = switch (resource.getType()) {
+                                case "wood" -> "w";
+                                case "stone" -> "s";
+                                case "gold" -> "g";
+                                default -> "R"; // Default for unknown resource type
+                            };
+
+                            // Check if a house is placed at this resource
+                            String positionKey = j + "," + i;
+                            if (houses.containsKey(positionKey)) {
+                                System.out.print(resourceSymbol + "* "); // Add * if house exists
+                            } else {
+                                System.out.print(resourceSymbol + " "); // Otherwise, just print the resource
+                            }
+
+                            resourceFound = true;
+                            break;
+                        }
+                    }
+
+                    // If no resource is found, print terrain or player
+                    if (!resourceFound) {
+                        if (terrain[i][j] == 0) {
+                            System.out.print(". "); // Empty space
+                        } else if (terrain[i][j] > 0) {
+                            System.out.print("P" + terrain[i][j] + " "); // Player ID
+                        } else {
+                            System.out.print(". "); // Fallback for unexpected cases
+                        }
                     }
                 }
                 System.out.println();
             }
             System.out.println();
-        }finally {
+        } finally {
             consoleLock.unlock();
         }
     }
-
     public String terrainToJSON() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(this.terrain);
     }
 
 
+
+
+    public synchronized boolean placeHouse(int playerId, int x, int y, String resourceType) {
+        String positionKey = x + "," + y;
+
+        if (houses.containsKey(positionKey)) {
+            System.out.println("House already exists at this location!");
+            return false;
+        }
+
+        // Ensure the position is on a resource
+
+        System.out.printf("Checking terrain and resources at (%d, %d).%n", x, y);
+        resources.forEach(r -> System.out.printf("Resource at (%d, %d): %s%n", r.getX(), r.getY(), r.getType()));
+        System.out.println("Terrain at this position: " + terrain[y][x]);
+        Resource resource = resources.stream()
+                .filter(r -> r.getX() == x && r.getY() == y && r.getType().equalsIgnoreCase(resourceType))
+                .findFirst()
+                .orElse(null);
+        if (resource == null) {
+            System.out.println("Invalid resource for placing a house!");
+            return false;
+        }
+
+        // Get the user
+        User user = getUserById(playerId);
+        if (user == null) {
+            System.err.println("Player not found!");
+            return false;
+        }
+
+        // Check resource costs
+        int woodCost = 70;
+        int stoneCost = 10;
+        if (user.getWood() < woodCost || user.getStone() < stoneCost) {
+            System.out.println("Not enough resources to build the house!");
+            return false;
+        }
+
+        // Deduct resources
+        user.setWood(user.getWood() - woodCost);
+        user.setStone(user.getStone() - stoneCost);
+
+        // Place the house
+        House house = new House(resourceType, switch (resourceType) {
+            case "wood" -> 50;
+            case "stone" -> 25;
+            case "gold" -> 15;
+            default -> 0;
+        });
+        houses.put(positionKey, house);
+        System.out.println("House placed by player " + playerId + " at (" + x + ", " + y + ").");
+
+        return true;
+    }
+
+
+    public synchronized boolean destroyHouse(int playerId, int x, int y) {
+        String positionKey = x + "," + y;
+
+        if (!houses.containsKey(positionKey)) {
+            System.out.println("No house exists at this location!");
+            return false;
+        }
+
+        House house = houses.get(positionKey);
+
+        // Remove the house
+        houses.remove(positionKey);
+        System.out.println("House at (" + x + ", " + y + ") destroyed by player " + playerId + ".");
+
+        return true;
+    }
+
+    public synchronized boolean upgradeHouse(int playerId, int x, int y) {
+        String positionKey = x + "," + y;
+
+        if (!houses.containsKey(positionKey)) {
+            System.out.println("No house exists at this location!");
+            return false;
+        }
+
+        House house = houses.get(positionKey);
+        User user = getUserById(playerId);
+        if (user == null) {
+            System.err.println("Player not found!");
+            return false;
+        }
+
+        // Upgrade costs
+        int woodCost = 70;
+        int stoneCost = 10;
+        int goldCost = 5;
+
+        // Check resources
+        if (user.getWood() < woodCost || user.getStone() < stoneCost || user.getGold() < goldCost) {
+            System.out.println("Not enough resources to upgrade the house!");
+            return false;
+        }
+
+        // Deduct resources
+        user.setWood(user.getWood() - woodCost);
+        user.setStone(user.getStone() - stoneCost);
+        user.setGold(user.getGold() - goldCost);
+
+        // Upgrade the house
+        house.setProductionRate(house.getProductionRate() + 10); // Increase production rate
+        System.out.println("House at (" + x + ", " + y + ") upgraded by player " + playerId + ".");
+        return true;
+    }
+
 }
-
-
-

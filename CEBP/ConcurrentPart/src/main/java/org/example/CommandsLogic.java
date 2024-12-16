@@ -2,24 +2,28 @@ package org.example;
 
 public class CommandsLogic {
     private String command;
-    public CommandsLogic(String command){
-        this.command = command;
-    }
-    public void processCommand(String userToken) {
-        switch (this.command) {
-            case "move":
-                // Logic for move command
-                System.out.println(userToken + " moved.");
-                break;
-            case "interactWithResource":
-                System.out.println(userToken + " interacted with a resource.");
-                break;
-            case "build":
-                System.out.println(userToken + " built something.");
-                break;
-            default:
-                System.out.println("Invalid command: " + command);
-                break;
+    private GameMap gameMap;
+    private User user;
+
+        public CommandsLogic(String command, GameMap gameMap, String userToken) {
+            this.command = command;
+            this.gameMap = gameMap;
+            this.user = gameMap.getUserByToken(userToken);
+
+            if (this.user == null) {
+                throw new IllegalArgumentException("Invalid user token.");
+            }
+        }
+
+        public void processCommand() {
+            switch (this.command) {
+                case "showResources" -> {
+                    System.out.printf(
+                            "Wood: %d, Stone: %d, Gold: %d%n",
+                            user.getWood(), user.getStone(), user.getGold()
+                    );
+                }
+                default -> System.out.println("Invalid command: " + command);
+            }
         }
     }
-}

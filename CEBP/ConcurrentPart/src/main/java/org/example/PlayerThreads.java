@@ -1,6 +1,7 @@
 package org.example;
 
 import java.util.concurrent.BlockingQueue;
+import org.json.JSONObject;
 
 public class PlayerThreads implements Runnable {
     private GameMap gameMap;
@@ -68,29 +69,116 @@ public class PlayerThreads implements Runnable {
         }else if (j >= gameMap.getHeight())
             System.err.println("Position out of map bounds!");
     }
+    public void placeHouse(int x, int y, String resourceType) {
+        System.out.printf("Player %d attempting to place house at (%d, %d) with resource type '%s'.%n",
+                playerId, x, y, resourceType);
 
-    public void moveOnTheMap(String command){
+        boolean success = gameMap.placeHouse(
+                playerId,
+                x, // Use provided X coordinate
+                y, // Use provided Y coordinate
+                resourceType
+        );
+
+        if (success) {
+            System.out.println("House placed successfully at (" + x + ", " + y + ").");
+        } else {
+            System.err.println("Failed to place house at (" + x + ", " + y + "). Ensure resource type and location match.");
+        }
+    }
 
 
-            switch (command) {
+    public void upgradeHouse(int x, int y) {
+        System.out.printf("Player %d attempting to upgrade house at (%d, %d)",
+                playerId, x, y);
+
+        boolean upgraded = gameMap.upgradeHouse(
+                playerId,
+                x, // Current X position
+                y // Current Y position
+        );
+
+        if (upgraded) {
+            System.out.println("House upgraded successfully at (" + x + ", " + y + ").");
+        } else {
+            System.err.println("Failed to upgrade house at (" + x + ", " + y + ")");
+        }
+    }
+
+    public void destroyHouse(int x, int y) {
+        System.out.printf("Player %d attempting to destroy house at (%d, %d)",
+                playerId, x, y);
+
+        boolean destroyed = gameMap.destroyHouse(
+                playerId,
+                x, // Current X position
+                y // Current Y position
+        );
+
+        if (destroyed) {
+            System.out.println("House destroyed successfully at (" + x + ", " + y + ").");
+        } else {
+            System.err.println("Failed to destroy house at (" + x + ", " + y + ")");
+        }
+    }
+    public void moveOnTheMap(String command) {
+        try {
+            // Log the received command for debugging
+            System.out.println("Received command string: " + command);
+
+            // Parse the JSON command
+            JSONObject commandJson = new JSONObject(command);
+            String cmd = commandJson.getString("command");
+
+            switch (cmd) {
                 case "moveUp" -> moveUp();
                 case "moveDown" -> moveDown();
                 case "moveLeft" -> moveLeft();
                 case "moveRight" -> moveRight();
+                case "placeHouse" -> {
+                    // Extract position and resource type
+                    JSONObject position = commandJson.getJSONObject("position");
+                    int x = position.getInt("x");
+                    int y = position.getInt("y");
+                    String resourceType = commandJson.getString("resourceType");
+
+                    // Call the placeHouse method
+                    placeHouse(x, y, resourceType);
+                }
+                case "destroyHouse" ->{
+                    JSONObject position = commandJson.getJSONObject("position");
+                    int x = position.getInt("x");
+                    int y = position.getInt("y");
+
+                    destroyHouse(x,y);
+
+                }
+                case "upgradeHouse" -> {
+                    JSONObject position = commandJson.getJSONObject("position");
+                    int x = position.getInt("x");
+                    int y = position.getInt("y");
+
+                    upgradeHouse(x,y);
+
+                }
                 case "end" -> stopMoving();
-                default -> System.err.println("Invalid direction!");
+                default -> System.err.println("Invalid command: " + cmd);
             }
+        } catch (org.json.JSONException e) {
+            System.err.println("Invalid JSON command: " + command);
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            gameMap.printMap();
+        gameMap.printMap();
 
-            try{
-                Thread.sleep(2000);
-            }catch (InterruptedException e){
-                e.printStackTrace();
-            }
-
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
-
     public void stopMoving() {
         running = false;
         try{
