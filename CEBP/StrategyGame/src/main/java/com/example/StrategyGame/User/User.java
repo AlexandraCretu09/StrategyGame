@@ -13,7 +13,7 @@ public class User {
     private String username;
 
     @ManyToOne
-    @JoinColumn(name = "lobby_id")
+    @JoinColumn(name = "lobby_id", referencedColumnName = "lobbyId")
     private Lobby lobby;
 
 

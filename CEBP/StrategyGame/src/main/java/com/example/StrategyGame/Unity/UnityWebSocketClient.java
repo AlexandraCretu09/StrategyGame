@@ -38,8 +38,8 @@ public class UnityWebSocketClient extends WebSocketClient {
     public void sendGameMap(GameMap gameMap) {
         if (this.isOpen()) {
             try {
-                String json = objectMapper.writeValueAsString(gameMap);  // Convert GameMap to JSON string
-                this.send(json);  // Send the JSON string
+                String json = objectMapper.writeValueAsString(gameMap);
+                this.send(json);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -34,5 +34,12 @@ public class UserController {
         userService.processUserCommand(user);
         return ResponseEntity.ok("User command received and processed.");
     }
+
+    @Operation(summary = "Lists all players in the lobby")
+    @GetMapping("/lobbyParticipants")
+    public List<String> getUsernamesByLobbyId(@RequestParam Integer lobbyId) {
+        return userService.getUsernamesByLobbyId(lobbyId);
+    }
+
 }
 
