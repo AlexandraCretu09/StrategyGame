@@ -35,6 +35,7 @@ public class LobbyController {
     public ResponseEntity<String> joinLobby(@RequestParam int lobbyId, @RequestParam String ipAddress, @RequestParam String username){
         try {
             String registeredIp = lobbyService.addPlayerToLobby(lobbyId, ipAddress, username);
+            lobbyService.notifyUnityToRefreshUsernames();
             return ResponseEntity.ok("IP Address registered: " + registeredIp);
         } catch (LobbyNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());

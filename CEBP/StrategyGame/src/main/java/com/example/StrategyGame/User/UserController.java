@@ -35,6 +35,13 @@ public class UserController {
         return ResponseEntity.ok("User command received and processed.");
     }
 
+    @Operation(summary = "Processes the username and the command in the URL", description = "Sends the received username and command to the concurrent part")
+    @PostMapping("/usernameAndCommand")
+    public ResponseEntity<String> receiveUserCommandInURL(@RequestParam String username, @RequestParam String command) {
+        userService.processUserCommandSeparately(username, command);
+        return ResponseEntity.ok("User command received and processed.");
+    }
+
     @Operation(summary = "Lists all players in the lobby")
     @GetMapping("/lobbyParticipants")
     public List<String> getUsernamesByLobbyId(@RequestParam Integer lobbyId) {

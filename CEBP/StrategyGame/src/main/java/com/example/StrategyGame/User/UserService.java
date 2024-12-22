@@ -37,6 +37,20 @@ public class UserService {
 
     }
 
+    public void processUserCommandSeparately(String username, String command) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        CommandRequest commandRequest = new CommandRequest(username, command);
+        HttpEntity<CommandRequest> request = new HttpEntity<>(commandRequest, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(ConcurrentProjectURL, request, String.class);
+
+        System.out.println("Response from Java project: " + response.getBody());
+
+    }
+
     public User createUser(String username, Lobby lobby){
         User user = new User();
         user.setUsername(username);

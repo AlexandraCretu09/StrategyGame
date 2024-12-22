@@ -101,5 +101,17 @@ public class LobbyService {
 
     }
 
+    public void notifyUnityToRefreshUsernames() {
+        String unityUrl = "http://localhost:8084/refreshUsernames/";
+
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            restTemplate.postForObject(unityUrl, null, String.class);
+            System.out.println("Notified Unity to refresh usernames.");
+        } catch (Exception e) {
+            System.out.println("Error notifying Unity: " + e.getMessage());
+        }
+    }
+
 
 }
