@@ -24,7 +24,7 @@ public class LobbyService {
     @Autowired
     private UserService userService;
 
-    private static final String ConcurrentProjectURL = "http://localhost:8081/api/usernames";
+    private static final String ConcurrentProjectURL = "http://concurrentpartcontainer:8081/api/usernames";
 
     private void processUsernamesList(List<String> usernamesList){
 

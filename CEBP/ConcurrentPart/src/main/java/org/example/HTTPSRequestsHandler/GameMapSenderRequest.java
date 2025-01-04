@@ -15,7 +15,7 @@ public class GameMapSenderRequest {
             HttpClient client = HttpClient.newHttpClient();
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8080/gameMap/update-terrain"))
+                    .uri(URI.create("http://springcontainer:8080/gameMap/update-terrain"))
                     .POST(HttpRequest.BodyPublishers.ofString(terrainJson))
                     .header("Content-Type", "application/json")
                     .build();

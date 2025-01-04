@@ -14,7 +14,7 @@ import java.util.List;
 
 @Service
 public class UserService {
-    private static final String ConcurrentProjectURL = "http://localhost:8081/api/commands";
+    private static final String ConcurrentProjectURL = "http://concurrentpartcontainer:8081/api/commands";
 
 
     private final UserRepository userRepository;
