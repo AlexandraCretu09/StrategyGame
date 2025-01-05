@@ -3,6 +3,7 @@ package com.example.StrategyGame.Lobby;
 import com.example.StrategyGame.CustomExceptions.CommandNotPermitted;
 import com.example.StrategyGame.CustomExceptions.LobbyNotFoundException;
 import com.example.StrategyGame.SimpleRequestClasses.LobbyParticipants;
+import com.example.StrategyGame.SimpleRequestClasses.LobbyRequest;
 import com.example.StrategyGame.User.User;
 import com.example.StrategyGame.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +27,14 @@ public class LobbyService {
 
     private static final String ConcurrentProjectURL = "http://localhost:8081/api/usernames";
 
-    private void processUsernamesList(List<String> usernamesList){
+    private void processUsernamesList(List<String> usernamesList, int lobbyId){
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<List<String>> request = new HttpEntity<>(usernamesList, headers);
+
+        LobbyRequest payload = new LobbyRequest(usernamesList, lobbyId);
+
+        HttpEntity<LobbyRequest> request = new HttpEntity<>(payload, headers);
 
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<String> response = restTemplate.postForEntity(ConcurrentProjectURL, request, String.class);
@@ -40,6 +44,16 @@ public class LobbyService {
     private Lobby findLobbyById(int lobbyId) {
         return lobbyRepository.findById(lobbyId)
                 .orElseThrow(() -> new LobbyNotFoundException("Lobby not found with ID: " + lobbyId));
+    }
+
+    public List<String> getAllLobbyIPs(int lobbyId){
+        Lobby lobby = findLobbyById(lobbyId);
+        return lobby.getIpList();
+    }
+
+    public String getLeaderIP(int lobbyId){
+        Lobby lobby = findLobbyById(lobbyId);
+        return lobby.getIpList().get(0);
     }
 
     public int addFirstPlayerToLobby(String ipAddress, String username){
@@ -97,21 +111,27 @@ public class LobbyService {
         lobbyRepository.save(lobby);
 
         List<String> usernames = userService.getUsernamesList(lobby.getUsersList());
-        processUsernamesList(usernames);
+        processUsernamesList(usernames, lobbyId);
 
     }
 
-    public void notifyUnityToRefreshUsernames() {
-        String unityUrl = "http://localhost:8084/refreshUsernames/";
-
-        RestTemplate restTemplate = new RestTemplate();
-        try {
-            restTemplate.postForObject(unityUrl, null, String.class);
-            System.out.println("Notified Unity to refresh usernames.");
-        } catch (Exception e) {
-            System.out.println("Error notifying Unity: " + e.getMessage());
-        }
-    }
+//    public void notifyUnityToRefreshUsernames(int lobbyId) {
+//
+//        List<String> lobbyIPs = getAllLobbyIPs(lobbyId);
+//
+//
+//        for(String IP : lobbyIPs) {
+//            String unityUrl = "http://" + IP +"/refreshUsernames/";
+//
+//            RestTemplate restTemplate = new RestTemplate();
+//            try {
+//                restTemplate.postForObject(unityUrl, null, String.class);
+//                System.out.println("Notified Unity to refresh usernames.");
+//            } catch (Exception e) {
+//                System.out.println("Error notifying Unity: " + e.getMessage());
+//            }
+//        }
+//    }
 
 
 }

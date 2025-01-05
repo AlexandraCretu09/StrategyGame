@@ -2,14 +2,19 @@ package com.example.StrategyGame.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class GameMapService {
+
     public GameMap gameMapCreator(int[][] terrain){
 
         if (terrain == null || terrain.length == 0 || terrain[0].length == 0) {
@@ -23,6 +28,8 @@ public class GameMapService {
         return gameMap;
 
     }
+
+
 
     public GameMap gameMapUpdater(int[][] terrain, GameMap gameMap){
         if (terrain == null || terrain.length == 0 || terrain[0].length == 0) {
