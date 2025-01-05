@@ -13,6 +13,10 @@ public class CommandHandler {
 
     //    private static volatile boolean receivedNumberOfPlayers = false;
     private static volatile boolean receivedUsernames = false;
+
+
+
+    private static volatile boolean receivedLobbyId = false;
     private static volatile boolean gotLobbyInfo = false;
     private static List<String> usernames;
 
@@ -41,14 +45,19 @@ public class CommandHandler {
         post("/api/usernames", (request, response) -> {
 
             try {
-                JSONArray usernamesList = new JSONArray(request.body());
+                JSONObject requestBody = new JSONObject(request.body());
+
+                JSONArray usernamesList = requestBody.getJSONArray("usernamesList");
+                int lobbyId = requestBody.getInt("lobbyId");
 
                 List<String> users = new ArrayList<>();
                 for (int i = 0; i < usernamesList.length(); i++) {
                     users.add(usernamesList.getString(i));
                 }
                 setReceivedUsernames(true);
+                setReceivedLobbyId(true);
                 CommandHandler.setUsernames(users);
+                Main.setLobbyId(lobbyId);
 
                 response.status(200);
                 return "UsersList processed";
@@ -72,24 +81,6 @@ public class CommandHandler {
             }
         });
     }
-
-//    public static void receiveOneCommand(){
-//        post("/api/sendOneCommand", (request, response) -> {
-//            JSONObject json = new JSONObject(request.body());
-//
-//            try {
-//                String command = json.optString("command");
-//                Main.storeCommand(command);
-//
-//                return "Finished sending command";
-//
-//            } catch (Exception e) {
-//                response.status(500);
-//                return "Server error: " + e.getMessage();
-//            }
-//
-//        });
-//    }
 
 
     public static boolean isReceivedUsernames() {
@@ -115,4 +106,13 @@ public class CommandHandler {
 
     public static void setUsernames(List<String> usernames) {
         CommandHandler.usernames = usernames;
-    }}
+    }
+
+    public static boolean isReceivedLobbyId() {
+        return receivedLobbyId;
+    }
+
+    public static void setReceivedLobbyId(boolean receivedLobbyId) {
+        CommandHandler.receivedLobbyId = receivedLobbyId;
+    }
+}

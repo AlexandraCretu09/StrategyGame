@@ -1,19 +1,32 @@
 package org.example.HTTPSRequestsHandler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.GameMap;
+import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 public class GameMapSenderRequest {
 
-    public static void sendTerrainToSpring(GameMap gameMap) {
+    public static void sendTerrainToSpring(GameMap gameMap, int lobbyId) {
         try {
-            String terrainJson = gameMap.terrainToJSON();
-            HttpClient client = HttpClient.newHttpClient();
 
+            String terrainJson = new ObjectMapper().writeValueAsString(Map.of(
+                    "terrain", gameMap.getTerrain(),
+                    "lobbyId", lobbyId
+            ));
+
+//            JSONObject payload = new JSONObject();
+//            payload.put("terrain", gameMap.terrainToJSON());
+//            payload.put("lobbyId", lobbyId);
+//
+//            String payloadJson = payload.toString();
+
+            HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8080/gameMap/update-terrain"))
                     .POST(HttpRequest.BodyPublishers.ofString(terrainJson))

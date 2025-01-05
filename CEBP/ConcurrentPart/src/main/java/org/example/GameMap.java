@@ -464,4 +464,8 @@ public class GameMap {
         return true;
     }
 
+    public int[][] getTerrain(){
+        return this.terrain;
+    }
+
 }

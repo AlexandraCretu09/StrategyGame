@@ -12,6 +12,7 @@ public class Main {
 
     private static final ConcurrentHashMap<String, BlockingQueue<String>> userQueues = new ConcurrentHashMap<>();
     private static GameMap gameMap;
+    private static int lobbyId;
 
     public static void main(String[] args) {
 
@@ -47,10 +48,14 @@ public class Main {
         }
     }
 
+    public static void setLobbyId(int Id){
+        lobbyId = Id;
+    }
+
     public static void sendTerrainToSpringCaller() {
         try {
             synchronized (gameMap) {
-                GameMapSenderRequest.sendTerrainToSpring(gameMap);
+                GameMapSenderRequest.sendTerrainToSpring(gameMap, lobbyId);
             }
         } catch (Exception e) {
             e.printStackTrace();
