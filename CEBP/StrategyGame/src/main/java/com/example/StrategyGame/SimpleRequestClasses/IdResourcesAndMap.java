@@ -2,13 +2,15 @@ package com.example.StrategyGame.SimpleRequestClasses;
 
 import java.util.List;
 
-public class MapAndID {
+public class IdResourcesAndMap {
     private List<List<Integer>>terrain;
+    private List<Resources> resources;
     private int lobbyId;
 
-    public MapAndID(List<List<Integer>> terrain, int lobbyId) {
+    public IdResourcesAndMap(List<List<Integer>> terrain, int lobbyId, List<Resources> resources) {
         this.terrain = terrain;
         this.lobbyId = lobbyId;
+        this.resources = resources;
     }
 
     public List<List<Integer>> getTerrain() {
@@ -25,5 +27,13 @@ public class MapAndID {
 
     public void setLobbyId(int lobbyId) {
         this.lobbyId = lobbyId;
+    }
+
+    public List<Resources> getResources() {
+        return resources;
+    }
+
+    public void setResources(List<Resources> resources) {
+        this.resources = resources;
     }
 }
