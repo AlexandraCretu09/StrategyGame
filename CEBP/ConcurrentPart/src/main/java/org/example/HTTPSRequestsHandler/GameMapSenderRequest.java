@@ -2,29 +2,26 @@ package org.example.HTTPSRequestsHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.GameMap;
+import org.example.Resource;
 import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Map;
 
 public class GameMapSenderRequest {
 
-    public static void sendTerrainToSpring(GameMap gameMap, int lobbyId) {
+    public static void sendTerrainToSpring(GameMap gameMap, int lobbyId, List<Resource> resourceList) {
         try {
 
             String terrainJson = new ObjectMapper().writeValueAsString(Map.of(
                     "terrain", gameMap.getTerrain(),
-                    "lobbyId", lobbyId
+                    "lobbyId", lobbyId,
+                    "resources", resourceList
             ));
-
-//            JSONObject payload = new JSONObject();
-//            payload.put("terrain", gameMap.terrainToJSON());
-//            payload.put("lobbyId", lobbyId);
-//
-//            String payloadJson = payload.toString();
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()

@@ -13,6 +13,7 @@ public class Main {
     private static final ConcurrentHashMap<String, BlockingQueue<String>> userQueues = new ConcurrentHashMap<>();
     private static GameMap gameMap;
     private static int lobbyId;
+    private static List<Resource> resources = new ArrayList<>();
 
     public static void main(String[] args) {
 
@@ -28,6 +29,7 @@ public class Main {
         }
 
         gameMap = initMap(noOfPlayers, users);
+        resources = gameMap.getResources();
 
         CommandHandler.endUserCommands();
         CommandHandler.receiveUsernameAndCommand();
@@ -55,7 +57,7 @@ public class Main {
     public static void sendTerrainToSpringCaller() {
         try {
             synchronized (gameMap) {
-                GameMapSenderRequest.sendTerrainToSpring(gameMap, lobbyId);
+                GameMapSenderRequest.sendTerrainToSpring(gameMap, lobbyId, resources);
             }
         } catch (Exception e) {
             e.printStackTrace();
